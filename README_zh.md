@@ -1,3 +1,6 @@
+![自主智能體](assets/overall.png)
+
+
 ## 精通 AI 智能體工程 - 構建自主 AI 智能體
 
 ### 6 週旅程：使用 OpenAI Agents SDK、CrewAI、LangGraph、AutoGen 和 MCP 編碼和部署 AI 智能體
