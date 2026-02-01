@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OpenClaw - Amazon Bedrock Configuration</title>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --text-color: #c9d1d9;
+            --code-bg: #161b22;
+            --border-color: #30363d;
+            --accent-color: #58a6ff;
+            --success-color: #3fb950;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+            font-size: 2rem;
+        }
+
+        h2 {
+            color: var(--text-color);
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .description {
+            color: #8b949e;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        pre {
+            background-color: var(--code-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 1rem;
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        code {
+            font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+            font-size: 0.9rem;
+        }
+
+        .lang-label {
+            color: #8b949e;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .success-box {
+            background-color: rgba(63, 185, 80, 0.1);
+            border: 1px solid var(--success-color);
+            border-radius: 6px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .success-box code {
+            color: var(--success-color);
+        }
+
+        .step {
+            margin: 1.5rem 0;
+        }
+
+        .step-number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border-radius: 50%;
+            text-align: center;
+            line-height: 24px;
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        footer {
+            margin-top: 3rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border-color);
+            color: #8b949e;
+            font-size: 0.9rem;
+        }
+
+        a {
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>OpenClaw Configuration for Amazon Bedrock</h1>
+        <p class="description">~/.openclaw/openclaw.json for Amazon Bedrock API KEY</p>
+
+        <h2>View Bedrock Provider Configuration</h2>
+        <div class="step">
+            <span class="lang-label">Shell</span>
+            <pre><code>cat ~/.openclaw/openclaw.json | jq -r .models.providers.bedrock</code></pre>
+        </div>
+
+        <div class="step">
+            <span class="lang-label">JSON Output</span>
+            <pre><code>{
+  "baseUrl": "https://bedrock-runtime.us-east-1.amazonaws.com",
+  "apiKey": "${AWS_BEARER_TOKEN_BEDROCK}",
+  "api": "bedrock-converse-stream",
+  "auth": "api-key",
+  "authHeader": true,
+  "models": [
+    {
+      "id": "us.anthropic.claude-haiku-4-5-20251001-v1:0",
+      "name": "Claude Haiku",
+      "reasoning": true,
+      "input": [
+        "text"
+      ],
+      "cost": {
+        "input": 0,
+        "output": 0,
+        "cacheRead": 0,
+        "cacheWrite": 0
+      },
+      "contextWindow": 262144,
+      "maxTokens": 8192
+    }
+  ]
+}</code></pre>
+        </div>
+
+        <h2>View Agent Defaults</h2>
+        <div class="step">
+            <span class="lang-label">Shell</span>
+            <pre><code>cat ~/.openclaw/openclaw.json | jq -r .agents.defaults</code></pre>
+        </div>
+
+        <div class="step">
+            <span class="lang-label">JSON Output</span>
+            <pre><code>{
+  "model": {
+    "primary": "bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0"
+  },
+  "models": {
+    "bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0": {
+      "alias": "claude-haiku"
+    }
+  },
+  ...
+}</code></pre>
+        </div>
+
+        <h2>Run the Gateway</h2>
+        <div class="step">
+            <span class="step-number">1</span>
+            <span>Export your AWS Bearer Token:</span>
+            <pre><code>export AWS_BEARER_TOKEN_BEDROCK=xxxxxxxxx</code></pre>
+        </div>
+
+        <div class="step">
+            <span class="step-number">2</span>
+            <span>Run OpenClaw gateway with verbose mode:</span>
+            <pre><code>openclaw gateway run --verbose</code></pre>
+        </div>
+
+        <h2>Verify It Works</h2>
+        <p>When you type <code>/new</code> in Telegram, you should see:</p>
+        <div class="success-box">
+            <code>✅ New session started · model: bedrock/us.anthropic.claude-haiku-4-5-20251001-v1:0</code>
+        </div>
+        <p>Then it works!</p>
+
+        <footer>
+            <p>Original Gist by <a href="https://github.com/pahud">pahud</a> |
+               <a href="https://gist.github.com/pahud/8965bfeec441225009abfa96f4751f48">View Original Gist</a>
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
