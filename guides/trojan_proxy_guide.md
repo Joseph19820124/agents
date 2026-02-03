@@ -412,6 +412,110 @@ http:
   listen: 127.0.0.1:10811
 ```
 
+### iOS Shadowrocket 配置指南
+
+#### 方法一：扫码添加
+
+生成以下链接的二维码，用 Shadowrocket 扫描添加：
+
+**Xray (VLESS+Reality):**
+```
+vless://e59f1f03-70f1-4b8e-a5ed-f8a053dc48f8@54.90.111.175:443?encryption=none&flow=xtls-rprx-vision&security=reality&sni=www.microsoft.com&fp=chrome&pbk=qsrT1r8Wk5Cjl9cMtsCIwcWnJTlHLDrlrG6cJU4PfT0&sid=8d4601c571ada072&type=tcp#Xray-US-East1
+```
+
+**Hysteria2:**
+```
+hysteria2://67WF%2Bfa1bOA3Wz%2FBT7bg8Q%3D%3D@3.145.44.195:443?insecure=1&sni=cj.chen-siyi.com#Hysteria2-US-East2
+```
+
+#### 方法二：手动配置
+
+##### 配置 Xray (VLESS+Reality)
+
+1. 打开 Shadowrocket → 点击右上角 **+**
+2. 选择类型: **VLESS**
+3. 填写以下信息:
+
+| 字段 | 值 |
+|------|-----|
+| 地址 | `54.90.111.175` |
+| 端口 | `443` |
+| UUID | `e59f1f03-70f1-4b8e-a5ed-f8a053dc48f8` |
+| 流控 (Flow) | `xtls-rprx-vision` |
+| 传输方式 | `tcp` |
+| TLS | `reality` |
+| SNI | `www.microsoft.com` |
+| Public Key | `qsrT1r8Wk5Cjl9cMtsCIwcWnJTlHLDrlrG6cJU4PfT0` |
+| Short ID | `8d4601c571ada072` |
+| Fingerprint | `chrome` |
+
+4. 点击右上角 **保存**
+
+##### 配置 Hysteria2
+
+1. 打开 Shadowrocket → 点击右上角 **+**
+2. 选择类型: **Hysteria2**
+3. 填写以下信息:
+
+| 字段 | 值 |
+|------|-----|
+| 地址 | `3.145.44.195` |
+| 端口 | `443` |
+| 密码 | `67WF+fa1bOA3Wz/BT7bg8Q==` |
+| SNI | `cj.chen-siyi.com` |
+| 允许不安全 | **开启** (因为使用自签名证书) |
+| UDP | **开启** |
+
+4. 点击右上角 **保存**
+
+#### Shadowrocket 截图配置参考
+
+```
+┌─────────────────────────────────┐
+│  Xray-US-East1 (VLESS)          │
+├─────────────────────────────────┤
+│  地址: 54.90.111.175            │
+│  端口: 443                      │
+│  UUID: e59f1f03-...dc48f8       │
+│  ─────────────────────────────  │
+│  传输: tcp                      │
+│  TLS: reality                   │
+│  SNI: www.microsoft.com         │
+│  Public Key: qsrT1r8Wk5Cjl...   │
+│  Short ID: 8d4601c571ada072     │
+└─────────────────────────────────┘
+
+┌─────────────────────────────────┐
+│  Hysteria2-US-East2             │
+├─────────────────────────────────┤
+│  地址: 3.145.44.195             │
+│  端口: 443                      │
+│  密码: 67WF+fa1bOA3Wz/BT7bg8Q== │
+│  ─────────────────────────────  │
+│  SNI: cj.chen-siyi.com          │
+│  允许不安全: ✓                  │
+│  UDP: ✓                         │
+└─────────────────────────────────┘
+```
+
+#### 测试连接
+
+1. 添加完成后，在主界面选择节点
+2. 点击顶部开关启用代理
+3. 打开 Safari 访问 https://ipinfo.io 验证出口 IP:
+   - Xray 节点应显示: `54.90.111.175`
+   - Hysteria2 节点应显示: `3.145.44.195`
+
+#### 常见问题
+
+**Q: Hysteria2 连接失败？**
+- 确保 "允许不安全" 已开启（自签名证书必须）
+- 检查手机网络是否允许 UDP 流量
+
+**Q: Xray Reality 连接超时？**
+- 确认 Public Key 和 Short ID 完全正确
+- 尝试切换 Fingerprint 为 `safari` 或 `ios`
+
 ---
 
 *最后更新：2026年2月*
