@@ -275,4 +275,143 @@ bash <(curl -fsSL https://sing-box.app/deb-install.sh)
 
 ---
 
+## AWS 跨区域代理测试报告
+
+> 以下是在 AWS 实际环境中对 Xray (VLESS+Reality) 和 Hysteria2 的部署测试报告。
+
+### 测试环境
+
+| 角色 | 区域 | 实例类型 | IP 地址 |
+|------|------|----------|---------|
+| Xray 服务端 | us-east-1 (弗吉尼亚) | t3.medium | 54.90.111.175 |
+| Hysteria2 服务端 | us-east-2 (俄亥俄) | t3.medium | 3.145.44.195 |
+| 测试客户端 | ap-northeast-1 (东京) | t3.medium | 3.113.182.126 |
+
+### 测试时间
+
+**2026-02-03 09:39:36 UTC**
+
+### 服务端配置详情
+
+#### Xray (VLESS + Reality) 配置
+
+```json
+{
+  "inbounds": [{
+    "port": 443,
+    "protocol": "vless",
+    "settings": {
+      "clients": [{"id": "e59f1f03-70f1-4b8e-a5ed-f8a053dc48f8", "flow": "xtls-rprx-vision"}],
+      "decryption": "none"
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "reality",
+      "realitySettings": {
+        "dest": "www.microsoft.com:443",
+        "serverNames": ["www.microsoft.com"],
+        "privateKey": "[REDACTED]",
+        "shortIds": ["8d4601c571ada072"]
+      }
+    }
+  }]
+}
+```
+
+**公钥 (供客户端使用):** `qsrT1r8Wk5Cjl9cMtsCIwcWnJTlHLDrlrG6cJU4PfT0`
+
+#### Hysteria2 配置
+
+```yaml
+listen: :443
+
+tls:
+  cert: /etc/hysteria/server.crt  # 自签名证书
+  key: /etc/hysteria/server.key
+
+auth:
+  type: password
+  password: "[REDACTED]"
+
+masquerade:
+  type: proxy
+  proxy:
+    url: https://www.bing.com
+    rewriteHost: true
+```
+
+### 测试结果
+
+| 指标 | Xray (VLESS+Reality) | Hysteria2 (QUIC) |
+|------|---------------------|------------------|
+| **连接状态** | ✅ SUCCESS | ✅ SUCCESS |
+| **首次连接延迟** | 782ms | 1377ms |
+| **10MB 下载时间** | 886ms | 754ms |
+| **估算速度** | 90.29 Mbps | 106.10 Mbps |
+| **出口 IP** | 54.90.111.175 | 3.145.44.195 |
+
+### 测试结论
+
+1. **连接稳定性**: 两种方案均能成功建立连接并正常代理流量
+
+2. **延迟表现**:
+   - Xray 首次连接延迟较低 (782ms)，适合延迟敏感场景
+   - Hysteria2 首次连接延迟较高 (1377ms)，QUIC 协议需要更多握手时间
+
+3. **传输速度**:
+   - Hysteria2 下载速度更快 (106 Mbps vs 90 Mbps)
+   - QUIC 协议在跨太平洋传输中展现了其优势
+
+4. **适用场景**:
+   - **Xray (Reality)**: 适合对抗检测要求高、延迟敏感的场景
+   - **Hysteria2**: 适合大文件传输、视频流等高带宽场景
+
+### 客户端配置参考
+
+#### Xray 客户端配置
+
+```json
+{
+  "outbounds": [{
+    "protocol": "vless",
+    "settings": {
+      "vnext": [{
+        "address": "54.90.111.175",
+        "port": 443,
+        "users": [{
+          "id": "e59f1f03-70f1-4b8e-a5ed-f8a053dc48f8",
+          "flow": "xtls-rprx-vision",
+          "encryption": "none"
+        }]
+      }]
+    },
+    "streamSettings": {
+      "network": "tcp",
+      "security": "reality",
+      "realitySettings": {
+        "fingerprint": "chrome",
+        "serverName": "www.microsoft.com",
+        "publicKey": "qsrT1r8Wk5Cjl9cMtsCIwcWnJTlHLDrlrG6cJU4PfT0",
+        "shortId": "8d4601c571ada072"
+      }
+    }
+  }]
+}
+```
+
+#### Hysteria2 客户端配置
+
+```yaml
+server: 3.145.44.195:443
+auth: "[YOUR_PASSWORD]"
+tls:
+  insecure: true  # 自签名证书需要此选项
+socks5:
+  listen: 127.0.0.1:10810
+http:
+  listen: 127.0.0.1:10811
+```
+
+---
+
 *最后更新：2026年2月*
